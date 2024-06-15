@@ -11,6 +11,7 @@ const {
   globalShortcut,
   Notification
 } = require('electron')
+const url = require("url")
 const path = require('path');
 var spawn = require('child_process');
 var contextMenu;
@@ -113,11 +114,11 @@ function createWindow() {
   windowobj = {
     x: width - 300,
     y: height - 500,
-    width: 300,
-    height: 500,
-    maximizable: false,
+    width: 1000,
+    height: 1000,
+    maximizable: true,
     minimizable: false,
-    resizable: false,
+    resizable: true,
     fullscreenable: false,
     frame: false,
     transparent: true,
@@ -125,16 +126,30 @@ function createWindow() {
     alwaysOnTop: true,
     titleBarStyle: 'customButtonsOnHover',
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      preload: __dirname + '/preload.js'
     }
   }
   // Create the browser window.
   mainWindow = new BrowserWindow(windowobj);
+  // mainWindow.toggleDevTools()
   // 打开开发者工具
   //mainWindow.webContents.openDevTools()
   windowId = mainWindow.id;
   // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, '/index.html'))
+  // mainWindow.loadFile(path.join(__dirname, '/index.html'))
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, '/index.html'),
+    protocol: "file:",
+    slashes: true
+
+  }))
+
+  setTimeout(() => {
+      console.log("sending message from main process")
+      mainWindow.webContents.send("submitted-form", "hello")
+  }, 3000)
+  // mainWindow.ipcMain.send("submitted-form","hi");
 
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
@@ -145,8 +160,9 @@ function createWindow() {
 
   //快捷键注册 模型切换
   globalShortcut.register('CommandOrControl+Y', () => {
-    //  notif.show();
+    console.log('s');
     var submenus = contextMenu.items[0].submenu.items;
+    console.log(submenus);
     for (var i = 0; i < submenus.length; i++) {
       if (submenus[i].checked) {
         var n = i == (submenus.length - 1) ? 0 : i + 1;
@@ -161,6 +177,7 @@ function createWindow() {
   globalShortcut.register('CommandOrControl+J', () => {
     var window = BrowserWindow.fromId(windowId);
     //发送换装消息
+    console.log('hit');
     window.webContents.send('asynchronous-reply', 'ping')
   });
 
@@ -184,6 +201,7 @@ function createWindow() {
     menuObj.checked = tag;
     menuObj.enabled = true;
     menuObj.click = function (menuItem) {
+      console.log(menuItem);
       changeModel(menuItem);
     };
     submenuArr.push(menuObj);
@@ -546,5 +564,7 @@ function changeModel(event) {
   //更换模型
   var window = BrowserWindow.fromId(windowId);
   //发送消息
+  console.log(event.label);
   window.webContents.send('changemodel', event.label);
+  // ipcMain.send()
 }
