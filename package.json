@@ -18,12 +18,12 @@
   ],
   "author": "wushaoqiang",
   "devDependencies": {
-    "electron": "latest"
+    "electron": "^27.3.10"
   },
   "dependencies": {
-    "menubar": "latest",
-    "imap": "^0.8.19",
-    "mailparser": "^2.6.0",
-    "lowdb": "latest"
+    "imap": "^0.8.17",
+    "lowdb": "latest",
+    "mailparser": "^3.7.1",
+    "menubar": "^9.4.0"
   }
 }
